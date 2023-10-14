@@ -5,6 +5,17 @@ from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import texttospeech_v1 as tts
 import openai
 import json
+import requests
+
+temp = "652b15317cc50d120fee6f72"
+
+url = f"https://2478-2610-148-1f02-3000-9d36-aae4-265d-97d.ngrok-free.app/calls/{temp}"
+response = requests.get(url)
+if response.status_code == 200:
+    data = response.json()
+else:
+    print(f"Request failed with status code {response.status_code}")
+
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcp_api.json"
 with open('openai_api.json', 'r') as file:
@@ -163,10 +174,10 @@ summary_builder = SummaryBuilder()
 
 def run_conversation():
 
-    location = input("Location: ")
+    location = data["location"]
     # medical emergency, fire, criminal activity, traffic accident, public safety threat
-    nature_of_emergency = input("Emergency: ")
-    your_name = input("Name: ")
+    nature_of_emergency = data["emergencyType"]
+    your_name = data["name"]
 
     messages = [
         {"role": "system", "content": "You are a 911 operator and have a critical responsibility. You've just received an emergency call. The caller's name is '{}', and they have reported an emergency situation at location '{}', specifically related to '{}'. Your duty is vital: you must remain calm, assertive, and supportive to assist the caller effectively. It is imperative to extract precise and actionable information about the emergency, focusing on details like physical descriptions, specific behaviors, and distinctive characteristics of the incident or involved parties. Your questions should be formulated one at a time, be concise, clear, straightforward, and directly aimed at obtaining detailed information to assist emergency services in responding effectively and efficiently. Ensure your interactions provide reassurance to the caller while maintaining urgency to gather requisite information. Keep your response limited to 15 words."
@@ -193,9 +204,9 @@ def run_conversation():
 
         with MicrophoneStream(RATE, CHUNK) as stream:
             audio_generator = stream.generator()
-            requests = (speech.StreamingRecognizeRequest(audio_content=content)
-                        for content in audio_generator)
-            responses = client.streaming_recognize(streaming_config, requests)
+            requests1 = (speech.StreamingRecognizeRequest(audio_content=content)
+                         for content in audio_generator)
+            responses = client.streaming_recognize(streaming_config, requests1)
 
             # Get user's vocal response as text
             user_message_text = listen_print_loop(responses)
@@ -228,6 +239,13 @@ def run_conversation():
     condensed_summary = summarize_with_openai(final_summary)
     print("\nCondensed Summary:")
     print(condensed_summary)
+
+    data1 = {"agentSummary": condensed_summary}
+    response = requests.put(url, json=data1)
+    if response.status_code == 200:
+        pass
+    else:
+        print(f"Request failed with status code {response.status_code}")
 
 
 if __name__ == "__main__":
