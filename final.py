@@ -1,3 +1,4 @@
+import sys
 import os
 import pyaudio
 import queue
@@ -6,15 +7,6 @@ from google.cloud import texttospeech_v1 as tts
 import openai
 import json
 import requests
-
-temp = "652b15317cc50d120fee6f72"
-
-url = f"https://2478-2610-148-1f02-3000-9d36-aae4-265d-97d.ngrok-free.app/calls/{temp}"
-response = requests.get(url)
-if response.status_code == 200:
-    data = response.json()
-else:
-    print(f"Request failed with status code {response.status_code}")
 
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcp_api.json"
@@ -162,7 +154,7 @@ def summarize_with_openai(summary_text):
     ]
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=messages,
     )
     summarized_text = response["choices"][0]["message"]["content"]
@@ -172,7 +164,14 @@ def summarize_with_openai(summary_text):
 summary_builder = SummaryBuilder()
 
 
-def run_conversation():
+def run_conversation(temp):
+
+    url = f"https://2478-2610-148-1f02-3000-9d36-aae4-265d-97d.ngrok-free.app/calls/{temp}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+    else:
+        print(f"Request failed with status code {response.status_code}")
 
     location = data["location"]
     # medical emergency, fire, criminal activity, traffic accident, public safety threat
@@ -199,7 +198,7 @@ def run_conversation():
     streaming_config = speech.StreamingRecognitionConfig(
         config=config, interim_results=True)
 
-    for i in range(5):
+    for i in range(4):
         print("\nListening...")
 
         with MicrophoneStream(RATE, CHUNK) as stream:
@@ -215,7 +214,7 @@ def run_conversation():
         summary_builder.add_message("user", user_message_text)
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=messages,
         )
         assistant_message_text = response["choices"][0]["message"]["content"]
@@ -249,4 +248,8 @@ def run_conversation():
 
 
 if __name__ == "__main__":
-    run_conversation()
+    if len(sys.argv) > 1:
+        temp = sys.argv[1]
+        run_conversation(temp)
+    else:
+        print("Error: Please provide the 'temp' argument.")
