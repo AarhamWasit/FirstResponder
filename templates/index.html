@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Calls</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .emergency-call {
+            background-color: #fff;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .emergency-call strong {
+            color: #007bff;
+        }
+        .completed-button {
+            margin-top: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition-duration: 0.4s;
+        }
+        .completed-button:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid #4caf50;
+        }
+    </style>
+    <script>
+        function deleteItem() {
+            
+            window.location.reload();
+        }
+    </script>
+</head>
+
+<script>
+    function redirectTodeletePage(id) {
+            // Redirect to the desired URL
+            window.location.href = '/api_endpoint/'+id; // Replace '/new-page' with the actual URL you want to redirect to
+        }
+    function redirectToPage(id) {
+        console.log(id)
+        const API_ENDPOINT = 'https://2478-2610-148-1f02-3000-9d36-aae4-265d-97d.ngrok-free.app/id='+id;
+
+// Make a GET request to the API endpoint
+fetch(API_ENDPOINT)
+  .then(response => {
+    // Check if the request was successful
+    if (response.ok) {
+      // Parse the JSON response data
+      return response.json();
+    }
+    // Handle errors if the request was not successful
+    throw new Error('Network response was not ok.');
+  })
+  .then(data => {
+    // Handle the JSON data from the API
+    console.log(data);
+  })
+  .catch(error => {
+    // Handle errors that occurred during the fetch operation
+    console.error('There has been a problem with your fetch operation:', error);
+  });
+       // window.location.href = "{{ url_for('index') }}";
+    }
+</script>
+    
+<body>
+    <div class="container">
+        <h1>Emergency Calls</h1>
+        <ul>
+            {% for record in emergency_calls %}
+            <li class="emergency-call">
+                <strong>Call Time:</strong> &emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{record.callTime }}<br>
+                <strong>Emergency Type:</strong>  &emsp;&ensp;&ensp; {{ record.emergencyType }}<br>
+                <strong>Location:</strong>   &emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ record.location}}<br>
+                <strong>Caller Name:</strong>    &emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ record.name }}<br><br>
+                <button class="completed-button" onclick="redirectTodeletePage('{{record.id}}')">Completed</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
